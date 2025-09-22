@@ -50,6 +50,34 @@ body {
   justify-content: space-between;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.connection-status {
+  font-size: 0.9rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-weight: bold;
+}
+
+.connection-status.connected {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.connection-status.disconnected {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.connection-status.checking {
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -78,6 +106,28 @@ body {
 }
 
 .language-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.clear-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-btn:hover {
+  background: #d32f2f;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -214,6 +264,7 @@ body {
 .voice-btn {
   background: var(--accent-yellow);
   color: var(--dark-green);
+  position: relative;
 }
 
 .voice-btn:hover {
@@ -225,6 +276,34 @@ body {
   background: #f44336;
   color: white;
   animation: pulse 1s infinite;
+}
+
+.voice-btn:disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.voice-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.voice-btn:hover::after {
+  opacity: 1;
 }
 
 .send-btn {
@@ -335,9 +414,14 @@ body {
     text-align: center;
   }
   
+  .header-right {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
   .chat-container {
     margin: 1rem auto;
-    height: calc(100vh - 180px);
+    height: calc(100vh - 200px);
   }
   
   .input-row {

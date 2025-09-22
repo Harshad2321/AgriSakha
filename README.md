@@ -1,8 +1,20 @@
 # 🌾 AgriSakha - Smart Agriculture Assistant
 
-**Developed by Crop Bytes for Smart India Hackathon (SIH)**
+**Developed by Crop Bytes for Smart India Hackathon (SIH) 2025**
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-brightgreen)](https://agrisakha.vercel.app)
+[![Backend API](https://img.shields.io/badge/API-Live-blue)](https://agrisakha-backend.railway.app)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/Harshad2321/AgriSakha)
 
 AgriSakha is an intelligent agricultural advisory chatbot that helps farmers get real-time advice about crops, pests, fertilizers, and irrigation. It features voice input/output, multilingual support (English/Hindi), and image analysis capabilities.
+
+## 🔗 Live Demo
+
+🌐 **Frontend**: https://agrisakha.vercel.app  
+🔧 **Backend API**: https://agrisakha-backend.railway.app  
+📁 **GitHub**: https://github.com/Harshad2321/AgriSakha  
+
+> **Note**: Voice features require HTTPS, so they work on the live demo but may have limitations on localhost.
 
 ## 🚀 Features
 
@@ -90,11 +102,16 @@ AgriSakha/
 
 ## 🎯 Usage
 
-### Quick Start Commands
+### Live Demo
+Visit the live application at: **https://agrisakha.vercel.app**
+
+### Local Development
+
+**Quick Start Commands:**
 
 1. **Start Backend:**
    ```powershell
-   cd backend && uvicorn main:app --reload
+   cd backend && python main.py
    ```
 
 2. **Start Frontend (in new terminal):**
@@ -103,6 +120,8 @@ AgriSakha/
    ```
 
 3. **Open your browser to:** `http://localhost:3000`
+
+> **Important**: For voice features to work locally, you may need to use HTTPS. The live demo has full voice functionality.
 
 ### Using the Application
 
@@ -126,7 +145,9 @@ AgriSakha/
 
 ## 🔧 API Endpoints
 
-### Base URL: `http://localhost:8000`
+### Base URLs
+- **Local**: `http://localhost:8000`
+- **Production**: `https://agrisakha-backend.railway.app`
 
 #### 1. Agricultural Advisory
 - **Endpoint**: `POST /advisory`
@@ -204,7 +225,31 @@ The current implementation uses **dummy AI logic** for demonstration:
 - Clear, readable fonts
 - Simple navigation
 
-## 🔮 Future Enhancements
+## � Deployment
+
+AgriSakha is ready for deployment on multiple platforms:
+
+### 🌐 Live Deployment
+- **Frontend**: Deployed on Vercel at https://agrisakha.vercel.app
+- **Backend**: Deployed on Railway at https://agrisakha-backend.railway.app
+
+### 📋 Hosting Options
+
+**Backend (FastAPI):**
+- Railway (Recommended) - Free tier available
+- Render - Free tier available  
+- Heroku - Paid plans
+- Google Cloud Run - Pay per use
+
+**Frontend (React):**
+- Vercel (Recommended) - Free for personal projects
+- Netlify - Free tier available
+- GitHub Pages - Free for public repos
+- AWS S3 + CloudFront - Pay per use
+
+For detailed deployment instructions, see [`DEPLOYMENT.md`](DEPLOYMENT.md)
+
+## �🔮 Future Enhancements
 
 ### AI Integration:
 - Replace dummy logic with real ML models
@@ -228,25 +273,37 @@ The current implementation uses **dummy AI logic** for demonstration:
 
 ### Common Issues:
 
-1. **CORS Error:**
+1. **Voice Recognition Not Working:**
+   - **Local**: Use HTTPS or try the live demo at https://agrisakha.vercel.app
+   - **Browser**: Chrome/Edge recommended for best speech recognition
+   - **Permissions**: Allow microphone access when prompted
+
+2. **CORS Error:**
    - Ensure backend is running on port 8000
    - Check if CORS middleware is enabled in FastAPI
-
-2. **Voice Recognition Not Working:**
-   - Ensure you're using HTTPS or localhost
-   - Check browser microphone permissions
-   - Chrome/Edge recommended for best speech recognition
 
 3. **Image Upload Fails:**
    - Check file format (only images allowed)
    - Ensure uploads/ directory exists in backend
+   - File size should be reasonable (< 10MB)
 
-4. **Port Already in Use:**
+4. **API Connection Issues:**
+   - Verify backend is running
+   - Check network connectivity
+   - For production, ensure HTTPS URLs
+
+5. **Port Already in Use:**
    ```powershell
    # Kill process on port 8000
    netstat -ano | findstr :8000
    taskkill /PID <PID_NUMBER> /F
    ```
+
+### Voice Features Requirements:
+- **HTTPS**: Required for microphone access in browsers
+- **Modern Browser**: Chrome, Firefox, Safari, Edge
+- **Permissions**: Allow microphone and speaker access
+- **Network**: Stable internet connection for speech processing
 
 ## 📞 Support
 

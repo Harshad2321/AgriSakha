@@ -5,5 +5,54 @@
     "location": "Delhi",
     "language": "English",
     "advice": "General advice: Maintain proper irrigation and soil testing."
+  },
+  {
+    "timestamp": "2025-09-22T22:46:57.253873",
+    "query": "hi",
+    "location": "Delhi",
+    "language": "English",
+    "advice": "General advice: Maintain proper irrigation and soil testing."
+  },
+  {
+    "timestamp": "2025-09-22T22:47:09.500788",
+    "query": "how to plant a weat seed",
+    "location": "Delhi",
+    "language": "English",
+    "advice": "General advice: Maintain proper irrigation and soil testing."
+  },
+  {
+    "timestamp": "2025-09-22T22:47:30.117659",
+    "query": "help\\",
+    "location": "Delhi",
+    "language": "English",
+    "advice": "General advice: Maintain proper irrigation and soil testing."
+  },
+  {
+    "timestamp": "2025-09-22T22:47:53.695197",
+    "query": "ho",
+    "location": "Delhi",
+    "language": "English",
+    "advice": "General advice: Maintain proper irrigation and soil testing."
+  },
+  {
+    "timestamp": "2025-09-22T22:49:01.157999",
+    "query": "hi",
+    "location": "Delhi",
+    "language": "English",
+    "advice": "General advice: Maintain proper irrigation and soil testing."
+  },
+  {
+    "timestamp": "2025-09-22T22:56:03.630427",
+    "query": "hi",
+    "location": "Delhi",
+    "language": "English",
+    "advice": "Agricultural guidance: Please specify your query about crops, pests, fertilizers, irrigation, or weather. For Delhi region, I can provide localized advice."
+  },
+  {
+    "timestamp": "2025-09-22T22:56:23.602945",
+    "query": "how to plant potato",
+    "location": "Delhi",
+    "language": "English",
+    "advice": "Agricultural guidance: Please specify your query about crops, pests, fertilizers, irrigation, or weather. For Delhi region, I can provide localized advice."
   }
 ]
