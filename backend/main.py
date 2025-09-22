@@ -15,6 +15,9 @@ app.add_middleware(
         "http://localhost:3000",  # React dev server
         "https://*.vercel.app",   # Vercel deployment
         "https://*.netlify.app",  # Netlify deployment
+        "https://Harshad2321.github.io", # GitHub Pages
+        "https://agrisakha.vercel.app", # Production frontend
+        "https://agrisakha-frontend.netlify.app", # Alternative frontend
         "*"  # Allow all origins for demo (restrict in production)
     ],
     allow_credentials=True,
