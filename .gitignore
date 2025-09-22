@@ -51,6 +51,8 @@ coverage/
 .env.development.local
 .env.test.local
 .env.production.local
+frontend/.env.local
+backend/.env
 
 # Backend specific
 backend/uploads/*.jpg
