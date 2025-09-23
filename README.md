@@ -3,29 +3,30 @@
 **Developed by Crop Bytes for Smart India Hackathon (SIH) 2025**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-brightgreen)](https://agrisakha.vercel.app)
-[![Backend API](https://img.shields.io/badge/API-Live-blue)](https://agrisakha-backend.railway.app)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black)](https://github.com/Harshad2321/AgriSakha)
+[![Deploy](https://img.shields.io/badge/Deploy%20on-Vercel-blue)](https://vercel.com/new/clone?repository-url=https://github.com/Harshad2321/AgriSakha&project-name=agrisakha&framework=create-react-app&root-directory=frontend)
 
-AgriSakha is an intelligent agricultural advisory chatbot that helps farmers get real-time advice about crops, pests, fertilizers, and irrigation. It features voice input/output, multilingual support (English/Hindi), and image analysis capabilities.
+AgriSakha is an intelligent agricultural advisory chatbot that helps farmers get real-time advice about crops, pests, fertilizers, and irrigation. It features voice input/output, multilingual support (English/Hindi), image analysis capabilities, and works both online (AI mode) and offline (demo mode).
 
 ## 🔗 Live Demo
 
 🌐 **Frontend**: https://agrisakha.vercel.app  
-🔧 **Backend API**: https://agrisakha-backend.railway.app  
-📁 **GitHub**: https://github.com/Harshad2321/AgriSakha  
+ **GitHub**: https://github.com/Harshad2321/AgriSakha  
 
-> **Note**: Voice features require HTTPS, so they work on the live demo but may have limitations on localhost.
+> **✨ New**: The app now includes a **Demo Mode** that works even without a backend connection, providing sample agricultural advice!
 
 ## 🚀 Features
 
 - **💬 Chatbot Interface**: Clean, user-friendly chat interface with agricultural theme
-- **🎤 Voice Input**: Speech-to-text using Web Speech API
+- **🎤 Voice Input**: Speech-to-text using Web Speech API (works in both modes)
 - **🔊 Voice Output**: Text-to-speech for accessibility
 - **🌐 Multilingual**: English and Hindi support with seamless switching
-- **📷 Image Analysis**: Upload crop/pest images for analysis
-- **🤖 Smart AI**: Intelligent responses based on agricultural queries
-- **📊 Query Logging**: Automatic logging of farmer queries for analysis
+- **📷 Image Analysis**: Upload crop/pest images for analysis (AI mode) or demo simulation
+- **🤖 Smart AI**: Intelligent responses based on agricultural queries (when backend available)
+- **🎭 Demo Mode**: Provides sample agricultural content when offline
+- **📊 Query Logging**: Automatic logging of farmer queries for analysis (AI mode)
 - **📱 Responsive**: Works on desktop and mobile devices
+- **⚡ Fast Loading**: Optimized build (~65KB gzipped)
 
 ## 🏗️ Project Structure
 
@@ -34,17 +35,20 @@ AgriSakha/
 ├── backend/                 # FastAPI Backend
 │   ├── main.py             # Main FastAPI application
 │   ├── requirements.txt    # Python dependencies
-│   ├── uploads/           # Image upload directory
-│   └── queries.json       # Query log file (auto-generated)
+│   └── test_import.py      # Backend testing script
 │
 ├── frontend/               # React Frontend
 │   ├── public/
 │   │   └── index.html     # HTML template
 │   ├── src/
-│   │   ├── App.js         # Main React component
+│   │   ├── App.js         # Main React component with demo mode
 │   │   ├── App.css        # Styled agriculture theme
 │   │   └── index.js       # React entry point
-│   └── package.json       # Node.js dependencies
+│   ├── package.json       # Node.js dependencies
+│   └── vercel.json        # Vercel deployment config
+│
+├── .github/workflows/     # CI/CD Pipeline
+│   └── deploy.yml         # Automated testing and deployment
 │
 └── README.md              # This file
 ```
@@ -125,23 +129,41 @@ Visit the live application at: **https://agrisakha.vercel.app**
 
 ### Using the Application
 
+**🎭 Demo Mode vs 🤖 AI Mode:**
+
+The app automatically detects backend availability and switches between modes:
+
+- **🤖 AI Mode** (when backend is connected): Full AI-powered responses with ML models
+- **🎭 Demo Mode** (when backend is unavailable): Sample agricultural content for demonstration
+
+**Features available in both modes:**
 1. **Text Queries**: Type agricultural questions in the chat input
-2. **Voice Input**: Click the microphone button to speak your query
+2. **Voice Input**: Click the microphone button to speak your query  
 3. **Language Toggle**: Switch between English and Hindi using the header button
-4. **Image Upload**: Upload crop/pest images using the camera button
+4. **Image Upload**: Upload crop/pest images (AI analysis or demo simulation)
 5. **Voice Output**: Click the speaker icon on bot responses to hear them
+
+**Connection Status:**
+- 🟢 **AI Mode - Connected**: Full backend functionality
+- 🟡 **Demo Mode**: Sample responses, perfect for demonstrations
 
 ### Example Queries
 
 **English:**
 - "What is the best time to sow wheat?"
-- "How to control pests in my crops?"
+- "How to control pests in my crops?"  
 - "What fertilizer should I use for rice?"
 - "When should I irrigate my field?"
 
 **Hindi:**
 - "गेहूं बोने का सबसे अच्छा समय क्या है?"
 - "मेरी फसल में कीट कैसे नियंत्रित करें?"
+
+**Demo Mode Sample Topics:**
+- Wheat farming tips
+- Rice cultivation advice
+- Pest management
+- Organic fertilizers
 
 ## 🔧 API Endpoints
 
