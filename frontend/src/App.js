@@ -2,16 +2,30 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// Try multiple backend URLs in order of preference
+const BACKEND_URLS = [
+  'https://agrisakha-backend.railway.app',
+  'https://agrisakha-backend-production.up.railway.app', 
+  'http://localhost:8000'
+];
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || BACKEND_URLS[0];
 
 function App() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      text: "🌾 Welcome to AgriSakha! I'm your smart agriculture assistant. Ask me about crops, pests, fertilizers, irrigation, or upload plant images for analysis.",
+      sender: 'bot',
+      timestamp: new Date().toLocaleTimeString()
+    }
+  ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [language, setLanguage] = useState('English');
   const [selectedFile, setSelectedFile] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // checking, connected, disconnected
+  const [currentApiUrl, setCurrentApiUrl] = useState(API_BASE_URL);
 
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -31,15 +45,22 @@ function App() {
   };
 
   const checkConnection = async () => {
-    try {
-      await axios.get(`${API_BASE_URL}/health`, { timeout: 5000 });
-      setConnectionStatus('connected');
-      return true;
-    } catch (error) {
-      console.error('Connection check failed:', error);
-      setConnectionStatus('disconnected');
-      return false;
+    // Try each backend URL until one works
+    for (const url of BACKEND_URLS) {
+      try {
+        await axios.get(`${url}/health`, { timeout: 5000 });
+        setConnectionStatus('connected');
+        setCurrentApiUrl(url);
+        console.log(`Connected to backend: ${url}`);
+        return true;
+      } catch (error) {
+        console.warn(`Failed to connect to ${url}:`, error.message);
+      }
     }
+    
+    console.error('All backend connections failed');
+    setConnectionStatus('disconnected');
+    return false;
   };
 
   // Check connection on mount and periodically
@@ -254,7 +275,7 @@ function App() {
         const formData = new FormData();
         formData.append('file', selectedFile);
 
-        response = await axios.post(`${API_BASE_URL}/upload-image`, formData, {
+        response = await axios.post(`${currentApiUrl}/upload-image`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -305,7 +326,7 @@ function App() {
 
       } else {
         // Handle text query
-        response = await axios.post(`${API_BASE_URL}/advisory`, {
+        response = await axios.post(`${currentApiUrl}/advisory`, {
           query: inputText,
           location: 'Delhi', // Default location
           language: language
@@ -333,31 +354,61 @@ function App() {
 
     } catch (error) {
       console.error('Error:', error);
-      let errorText = 'Sorry, I encountered an error. ';
-
-      if (error.response) {
-        // Server responded with error status
-        errorText += `Server error: ${error.response.status}. `;
-        if (error.response.status === 404) {
-          errorText += 'Backend service not found. Please check if the server is running.';
-        } else if (error.response.status >= 500) {
-          errorText += 'Server is currently unavailable. Please try again later.';
+      
+      // Fallback mode with demo responses
+      if (connectionStatus === 'disconnected') {
+        let fallbackResponse = '';
+        const query = inputText.toLowerCase();
+        
+        if (selectedFile) {
+          fallbackResponse = `🔍 **Image Analysis (Demo Mode)**\n\nImage uploaded successfully! In live mode, this would analyze your plant image for diseases and provide specific recommendations.\n\n📋 **Sample Analysis:**\n• Plant: Crop leaf uploaded\n• Status: Analysis pending backend connection\n• Recommendation: Ensure proper watering and monitor for pests\n\n⚠️ **Note:** Connect to backend for real AI-powered analysis.`;
+        } else if (query.includes('wheat') || query.includes('गेहूं')) {
+          fallbackResponse = `🌾 **Wheat Farming Advice (Demo Mode)**\n\nBest practices for wheat cultivation:\n• **Sowing time:** November-December\n• **Seed rate:** 100-125 kg/hectare\n• **Fertilizer:** NPK 120:60:40 kg/hectare\n• **Irrigation:** 4-6 irrigations needed\n• **Harvest:** April-May\n\n⚠️ **Note:** This is demo content. Connect to backend for personalized advice.`;
+        } else if (query.includes('rice') || query.includes('धान')) {
+          fallbackResponse = `🌾 **Rice Farming Advice (Demo Mode)**\n\nRice cultivation guidelines:\n• **Transplanting:** 20-25 day old seedlings\n• **Spacing:** 20x15 cm\n• **Water:** Maintain 2-5cm standing water\n• **Fertilizer:** Apply in splits\n• **Pests:** Monitor for stem borer\n\n⚠️ **Note:** This is demo content. Connect to backend for personalized advice.`;
+        } else {
+          fallbackResponse = `🤖 **AgriSakha Demo Mode**\n\nI'm currently running in demo mode as the backend is unavailable.\n\n**What I can help with:**\n• Crop cultivation advice\n• Pest and disease management\n• Fertilizer recommendations\n• Irrigation guidance\n• Soil management tips\n\n**Try asking about:**\n• "Wheat farming tips"\n• "Rice pest control"\n• "Organic fertilizers"\n\n⚠️ **Note:** Connect to backend for AI-powered responses and image analysis.`;
         }
-      } else if (error.request) {
-        // Network error
-        errorText += 'Cannot connect to server. Please check your internet connection and ensure the backend is running.';
+        
+        const botMessage = {
+          id: Date.now() + 1,
+          text: fallbackResponse,
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString(),
+          isDemo: true
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        speakText(fallbackResponse.replace(/\*\*/g, '').replace(/⚠️|🌾|🔍|📋|🤖|•/g, ''));
+        
       } else {
-        // Other error
-        errorText += 'Please try again later.';
-      }
+        // Regular error handling
+        let errorText = 'Sorry, I encountered an error. ';
 
-      const errorMessage = {
-        id: Date.now() + 1,
-        text: errorText,
-        sender: 'bot',
-        timestamp: new Date().toLocaleTimeString()
-      };
-      setMessages(prev => [...prev, errorMessage]);
+        if (error.response) {
+          // Server responded with error status
+          errorText += `Server error: ${error.response.status}. `;
+          if (error.response.status === 404) {
+            errorText += 'Backend service not found. Please check if the server is running.';
+          } else if (error.response.status >= 500) {
+            errorText += 'Server is currently unavailable. Please try again later.';
+          }
+        } else if (error.request) {
+          // Network error
+          errorText += 'Cannot connect to server. Please check your internet connection and ensure the backend is running.';
+        } else {
+          // Other error
+          errorText += 'Please try again later.';
+        }
+
+        const errorMessage = {
+          id: Date.now() + 1,
+          text: errorText,
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      }
     } finally {
       setIsLoading(false);
       setInputText('');
@@ -396,9 +447,9 @@ function App() {
           </div>
           <div className="header-right">
             <div className={`connection-status ${connectionStatus}`}>
-              {connectionStatus === 'connected' && '🟢 Online'}
-              {connectionStatus === 'disconnected' && '🔴 Offline'}
-              {connectionStatus === 'checking' && '🟡 Checking...'}
+              {connectionStatus === 'connected' && '🟢 AI Mode - Connected'}
+              {connectionStatus === 'disconnected' && '� Demo Mode - Try sample queries'}
+              {connectionStatus === 'checking' && '� Connecting to AI...'}
             </div>
             {messages.length > 0 && (
               <button className="clear-btn" onClick={clearConversation} title={language === 'English' ? 'Clear conversation' : 'बातचीत साफ़ करें'}>
@@ -555,10 +606,10 @@ function App() {
               type="button"
               className={`voice-btn ${isRecording ? 'recording' : ''}`}
               onClick={handleVoiceInput}
-              disabled={connectionStatus === 'disconnected'}
+              disabled={false}
               title={
                 connectionStatus === 'disconnected'
-                  ? (language === 'English' ? 'Voice input unavailable (offline)' : 'आवाज़ इनपुट उपलब्ध नहीं (ऑफलाइन)')
+                  ? (language === 'English' ? 'Voice input available (demo mode)' : 'आवाज़ इनपुट उपलब्ध (डेमो मोड)')
                   : isRecording
                     ? (language === 'English' ? 'Stop recording' : 'रिकॉर्डिंग बंद करें')
                     : (language === 'English' ? 'Start voice input' : 'आवाज़ इनपुट शुरू करें')
