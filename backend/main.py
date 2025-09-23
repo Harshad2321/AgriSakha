@@ -5,8 +5,22 @@ import json
 import os
 from datetime import datetime
 import uvicorn
+from transformers import pipeline
+from PIL import Image
 
 app = FastAPI(title="AgriSakha API", version="1.0.0")
+
+# Load HuggingFace QA model (for text queries)
+qa_pipeline = pipeline(
+    "question-answering",
+    model="distilbert-base-uncased-distilled-squad"
+)
+
+# Load plant disease classifier (for image queries)
+disease_classifier = pipeline(
+    "image-classification",
+    model="plant-disease-classification/efficientnet-b0"
+)
 
 # Enable CORS for React frontend
 app.add_middleware(
@@ -147,18 +161,16 @@ async def health_check():
 
 @app.post("/advisory", response_model=AdvisoryResponse)
 async def get_advisory(request: AdvisoryRequest):
-    """
-    Get agricultural advisory based on farmer's query
-    """
     try:
-        # Get AI response
-        advice = get_dummy_ai_response(request.query, request.location)
-        
-        # Translate if needed
-        if request.language == "Hindi":
-            advice = translate_text(advice, "Hindi")
-        
-        # Log query for future analysis
+        # Use QA model
+        result = qa_pipeline({
+            "question": request.query,
+            "context": "This is an agriculture knowledge base. Wheat, rice, fertilizer, irrigation, pest control, soil management, organic farming, crop rotation."
+        })
+
+        advice = result["answer"]
+
+        # Save log
         log_entry = {
             "timestamp": datetime.now().isoformat(),
             "query": request.query,
@@ -166,66 +178,66 @@ async def get_advisory(request: AdvisoryRequest):
             "language": request.language,
             "advice": advice
         }
-        
-        # Save to log file
         log_file = "queries.json"
         try:
             with open(log_file, "r") as f:
                 logs = json.load(f)
         except FileNotFoundError:
             logs = []
-        
         logs.append(log_entry)
-        
         with open(log_file, "w") as f:
             json.dump(logs, f, indent=2)
-        
+
         return AdvisoryResponse(
             advice=advice,
             language=request.language,
-            tts="dummy_audio_link",  # Placeholder for TTS
-            confidence=0.85
+            tts="dummy_audio_link",
+            confidence=result["score"]
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing advisory: {str(e)}")
 
 @app.post("/upload-image")
 async def upload_image(file: UploadFile = File(...)):
-    """
-    Upload crop/pest image for analysis
-    """
     try:
-        # Validate file type
         if not file.content_type.startswith("image/"):
             raise HTTPException(status_code=400, detail="File must be an image")
-        
-        # Create uploads directory if it doesn't exist
+
         upload_dir = "uploads"
         os.makedirs(upload_dir, exist_ok=True)
-        
-        # Generate unique filename
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{timestamp}_{file.filename}"
         file_path = os.path.join(upload_dir, filename)
-        
-        # Save file
+
         content = await file.read()
         with open(file_path, "wb") as f:
             f.write(content)
-        
-        # Dummy image analysis
-        analysis_result = {
+
+        # --- Run image classifier ---
+        image = Image.open(file_path)
+        predictions = disease_classifier(image)
+        top_pred = predictions[0]
+        disease_label = top_pred["label"]
+        confidence = float(top_pred["score"])
+
+        # --- Convert disease label into advisory query ---
+        advisory_query = f"My crop seems to have {disease_label}. What should I do?"
+        result = qa_pipeline({
+            "question": advisory_query,
+            "context": "This is an agriculture knowledge base. Treatments include neem spray, fungicides, crop rotation, irrigation, fertilizer management."
+        })
+        advice = result["answer"]
+
+        return {
             "filename": filename,
-            "file_path": file_path,
-            "size": len(content),
-            "analysis": "Dummy analysis: Image uploaded successfully. Crop appears healthy.",
-            "recommendations": "Continue current care routine, monitor for pest activity",
-            "confidence": 0.75
+            "detected_disease": disease_label,
+            "confidence": confidence,
+            "analysis": f"Detected: {disease_label}",
+            "recommendations": advice
         }
-        
-        return analysis_result
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error uploading image: {str(e)}")
 

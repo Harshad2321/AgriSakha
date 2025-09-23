@@ -12,11 +12,24 @@ function App() {
   const [language, setLanguage] = useState('English');
   const [selectedFile, setSelectedFile] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // checking, connected, disconnected
-  
+
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // Check backend connection
+  // Format text for better display
+  const formatMessageText = (text) => {
+    // Convert markdown-style formatting to HTML-like formatting
+    return text
+      .split('\n')
+      .map((line, index) => {
+        // Handle bold text
+        if (line.includes('**')) {
+          line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        }
+        return <div key={index} dangerouslySetInnerHTML={{ __html: line }} />;
+      });
+  };
+
   const checkConnection = async () => {
     try {
       await axios.get(`${API_BASE_URL}/health`, { timeout: 5000 });
@@ -32,10 +45,10 @@ function App() {
   // Check connection on mount and periodically
   useEffect(() => {
     checkConnection();
-    
+
     // Check connection every 30 seconds
     const interval = setInterval(checkConnection, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -59,9 +72,9 @@ function App() {
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
-        
+
         let errorMessage = 'Speech recognition error: ';
-        switch(event.error) {
+        switch (event.error) {
           case 'no-speech':
             errorMessage += 'No speech detected. Please speak clearly and try again.';
             break;
@@ -87,7 +100,7 @@ function App() {
           default:
             errorMessage += 'Please try again.';
         }
-        
+
         // Only show alert for actual errors, not user actions
         if (event.error !== 'aborted') {
           alert(errorMessage);
@@ -120,9 +133,9 @@ function App() {
     }
 
     // Check for HTTPS or localhost
-    if (window.location.protocol !== 'https:' && 
-        window.location.hostname !== 'localhost' && 
-        window.location.hostname !== '127.0.0.1') {
+    if (window.location.protocol !== 'https:' &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1') {
       alert('Voice recognition requires HTTPS or localhost. Please use the live demo or run on localhost.');
       return;
     }
@@ -131,22 +144,22 @@ function App() {
       recognitionRef.current.stop();
       setIsRecording(false);
       return;
-    } 
+    }
 
     try {
       // Request microphone permission first
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach(track => track.stop()); // Stop the stream immediately
-      
+
       // Update recognition language based on current language setting
       recognitionRef.current.lang = language === 'Hindi' ? 'hi-IN' : 'en-US';
-      
+
       setIsRecording(true);
       recognitionRef.current.start();
     } catch (error) {
       console.error('Microphone permission error:', error);
       let errorMessage = 'Microphone access denied. ';
-      
+
       if (error.name === 'NotAllowedError') {
         errorMessage += 'Please allow microphone access in your browser settings and try again.';
       } else if (error.name === 'NotFoundError') {
@@ -156,7 +169,7 @@ function App() {
       } else {
         errorMessage += 'Please check your microphone settings and try again.';
       }
-      
+
       alert(errorMessage);
       setIsRecording(false);
     }
@@ -170,35 +183,35 @@ function App() {
 
     // Stop any ongoing speech
     window.speechSynthesis.cancel();
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = language === 'Hindi' ? 'hi-IN' : 'en-US';
     utterance.rate = 0.8;
     utterance.pitch = 1;
     utterance.volume = 1;
-    
+
     // Handle speech synthesis events
     utterance.onstart = () => {
       console.log('Speech started');
     };
-    
+
     utterance.onend = () => {
       console.log('Speech ended');
     };
-    
+
     utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event.error);
       if (event.error === 'not-allowed') {
         alert('Speech synthesis blocked. Please check your browser settings.');
       }
     };
-    
+
     // For some browsers, we need to wait for voices to load
     const speakWhenReady = () => {
       const voices = window.speechSynthesis.getVoices();
       if (voices.length > 0) {
         // Try to find a voice for the selected language
-        const preferredVoice = voices.find(voice => 
+        const preferredVoice = voices.find(voice =>
           voice.lang.startsWith(language === 'Hindi' ? 'hi' : 'en')
         );
         if (preferredVoice) {
@@ -210,7 +223,7 @@ function App() {
         window.speechSynthesis.speak(utterance);
       }
     };
-    
+
     if (window.speechSynthesis.getVoices().length > 0) {
       speakWhenReady();
     } else {
@@ -220,7 +233,7 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!inputText.trim() && !selectedFile) return;
 
     const userMessage = {
@@ -235,28 +248,61 @@ function App() {
 
     try {
       let response;
-      
+
       if (selectedFile) {
         // Handle image upload
         const formData = new FormData();
         formData.append('file', selectedFile);
-        
+
         response = await axios.post(`${API_BASE_URL}/upload-image`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-        
+
+        // Format the disease detection response
+        const { detected_disease, confidence, analysis, recommendations, filename } = response.data;
+
+        let responseText = `📸 **Image Analysis Results**\n\n`;
+        responseText += `🗂️ **File:** ${filename}\n\n`;
+
+        if (detected_disease && detected_disease !== 'healthy') {
+          responseText += `🔍 **Disease Detected:** ${detected_disease.replace(/_/g, ' ').toUpperCase()}\n`;
+          responseText += `📊 **Confidence:** ${(confidence * 100).toFixed(1)}%\n\n`;
+        } else if (detected_disease === 'healthy') {
+          responseText += `✅ **Status:** Plant appears healthy\n`;
+          responseText += `📊 **Confidence:** ${(confidence * 100).toFixed(1)}%\n\n`;
+        }
+
+        if (analysis) {
+          responseText += `🔬 **Analysis:** ${analysis}\n\n`;
+        }
+
+        if (recommendations) {
+          responseText += `💡 **Recommendations:** ${recommendations}`;
+        }
+
         const botMessage = {
           id: Date.now() + 1,
-          text: `Image Analysis: ${response.data.analysis}\\n\\nRecommendations: ${response.data.recommendations}`,
+          text: responseText,
           sender: 'bot',
-          timestamp: new Date().toLocaleTimeString()
+          timestamp: new Date().toLocaleTimeString(),
+          isImageAnalysis: true,
+          diseaseData: {
+            detected_disease,
+            confidence,
+            analysis,
+            recommendations,
+            filename
+          }
         };
-        
+
         setMessages(prev => [...prev, botMessage]);
-        speakText(botMessage.text);
-        
+
+        // Create a more natural speech text for disease analysis
+        const speechText = recommendations || `Disease analysis complete. ${detected_disease === 'healthy' ? 'Plant appears healthy' : 'Disease detected: ' + detected_disease.replace(/_/g, ' ')} with ${(confidence * 100).toFixed(0)} percent confidence.`;
+        speakText(speechText);
+
       } else {
         // Handle text query
         response = await axios.post(`${API_BASE_URL}/advisory`, {
@@ -265,21 +311,30 @@ function App() {
           language: language
         });
 
+        // Format the advisory response
+        let responseText = response.data.advice;
+
+        // Add confidence indicator if available
+        if (response.data.confidence) {
+          responseText += `\n\n📊 **Confidence:** ${(response.data.confidence * 100).toFixed(1)}%`;
+        }
+
         const botMessage = {
           id: Date.now() + 1,
-          text: response.data.advice,
+          text: responseText,
           sender: 'bot',
-          timestamp: new Date().toLocaleTimeString()
+          timestamp: new Date().toLocaleTimeString(),
+          confidence: response.data.confidence
         };
 
         setMessages(prev => [...prev, botMessage]);
         speakText(response.data.advice);
       }
-      
+
     } catch (error) {
       console.error('Error:', error);
       let errorText = 'Sorry, I encountered an error. ';
-      
+
       if (error.response) {
         // Server responded with error status
         errorText += `Server error: ${error.response.status}. `;
@@ -295,7 +350,7 @@ function App() {
         // Other error
         errorText += 'Please try again later.';
       }
-      
+
       const errorMessage = {
         id: Date.now() + 1,
         text: errorText,
@@ -362,9 +417,9 @@ function App() {
           <div className="welcome-message">
             <h2>{language === 'English' ? 'Welcome to AgriSakha!' : 'आग्रीसखा में आपका स्वागत है!'}</h2>
             <p>
-              {language === 'English' 
-                ? 'Your smart agriculture assistant. Ask me about crops, pests, fertilizers, irrigation, or upload crop images for analysis.'
-                : 'आपका स्मार्ट कृषि सहायक। मुझसे फसलों, कीटों, उर्वरकों, सिंचाई के बारे में पूछें या विश्लेषण के लिए फसल की तस्वीरें अपलोड करें।'
+              {language === 'English'
+                ? 'Your smart agriculture assistant powered by AI. Ask me about crops, pests, fertilizers, irrigation, or upload crop images for disease detection and analysis.'
+                : 'आपका स्मार्ट कृषि सहायक एआई द्वारा संचालित। मुझसे फसलों, कीटों, उर्वरकों, सिंचाई के बारे में पूछें या रोग का पता लगाने और विश्लेषण के लिए फसल की तस्वीरें अपलोड करें।'
               }
             </p>
           </div>
@@ -372,15 +427,87 @@ function App() {
 
         <div className="chat-messages">
           {messages.map((message) => (
-            <div key={message.id} className={`message ${message.sender}`}>
+            <div key={message.id} className={`message ${message.sender} ${message.isImageAnalysis ? 'image-analysis' : ''}`}>
               <div className="message-content">
-                {message.text}
+                {message.isImageAnalysis && message.diseaseData ? (
+                  <div className="disease-analysis">
+                    <div className="analysis-header">
+                      <span className="analysis-icon">📸</span>
+                      <strong>Image Analysis Results</strong>
+                    </div>
+
+                    <div className="analysis-details">
+                      <div className="detail-row">
+                        <span className="detail-label">📁 File:</span>
+                        <span className="detail-value">{message.diseaseData.filename}</span>
+                      </div>
+
+                      {message.diseaseData.detected_disease && (
+                        <>
+                          <div className="detail-row">
+                            <span className="detail-label">
+                              {message.diseaseData.detected_disease === 'healthy' ? '✅ Status:' : '🔍 Disease Detected:'}
+                            </span>
+                            <span className={`detail-value ${message.diseaseData.detected_disease === 'healthy' ? 'healthy' : 'disease'}`}>
+                              {message.diseaseData.detected_disease === 'healthy'
+                                ? 'Plant appears healthy'
+                                : message.diseaseData.detected_disease.replace(/_/g, ' ').toUpperCase()
+                              }
+                            </span>
+                          </div>
+
+                          <div className="detail-row">
+                            <span className="detail-label">📊 Confidence:</span>
+                            <span className="detail-value confidence">
+                              <div className="confidence-bar">
+                                <div
+                                  className="confidence-fill"
+                                  style={{ width: `${message.diseaseData.confidence * 100}%` }}
+                                ></div>
+                              </div>
+                              {(message.diseaseData.confidence * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </>
+                      )}
+
+                      {message.diseaseData.analysis && (
+                        <div className="detail-row analysis-row">
+                          <span className="detail-label">🔬 Analysis:</span>
+                          <span className="detail-value">{message.diseaseData.analysis}</span>
+                        </div>
+                      )}
+
+                      {message.diseaseData.recommendations && (
+                        <div className="detail-row recommendations-row">
+                          <span className="detail-label">💡 Recommendations:</span>
+                          <span className="detail-value recommendations">{message.diseaseData.recommendations}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="message-text">
+                    {formatMessageText(message.text)}
+                  </div>
+                )}
                 <div className="message-time">{message.timestamp}</div>
               </div>
               {message.sender === 'bot' && (
-                <button 
+                <button
                   className="speak-btn"
-                  onClick={() => speakText(message.text)}
+                  onClick={() => {
+                    if (message.isImageAnalysis && message.diseaseData) {
+                      // Create natural speech for disease analysis
+                      const speechText = message.diseaseData.recommendations ||
+                        `Disease analysis complete. ${message.diseaseData.detected_disease === 'healthy' ? 'Plant appears healthy' : 'Disease detected: ' + message.diseaseData.detected_disease.replace(/_/g, ' ')} with ${(message.diseaseData.confidence * 100).toFixed(0)} percent confidence.`;
+                      speakText(speechText);
+                    } else {
+                      // For regular advisory messages, extract just the advice part
+                      const textToSpeak = message.text.split('\n\n📊')[0]; // Remove confidence indicator from speech
+                      speakText(textToSpeak);
+                    }
+                  }}
                   title="Listen to response"
                 >
                   🔊
@@ -388,7 +515,7 @@ function App() {
               )}
             </div>
           ))}
-          
+
           {isLoading && (
             <div className="message bot">
               <div className="message-content">
@@ -423,28 +550,28 @@ function App() {
               rows={inputText.split('\n').length}
               style={{ minHeight: '40px', maxHeight: '120px', resize: 'none' }}
             />
-            
+
             <button
               type="button"
               className={`voice-btn ${isRecording ? 'recording' : ''}`}
               onClick={handleVoiceInput}
               disabled={connectionStatus === 'disconnected'}
               title={
-                connectionStatus === 'disconnected' 
+                connectionStatus === 'disconnected'
                   ? (language === 'English' ? 'Voice input unavailable (offline)' : 'आवाज़ इनपुट उपलब्ध नहीं (ऑफलाइन)')
-                  : isRecording 
+                  : isRecording
                     ? (language === 'English' ? 'Stop recording' : 'रिकॉर्डिंग बंद करें')
                     : (language === 'English' ? 'Start voice input' : 'आवाज़ इनपुट शुरू करें')
               }
               data-tooltip={
-                isRecording 
+                isRecording
                   ? (language === 'English' ? 'Recording...' : 'रिकॉर्ड हो रहा है...')
                   : (language === 'English' ? 'Voice Input' : 'आवाज़ इनपुट')
               }
             >
               {isRecording ? '⏹️' : '🎤'}
             </button>
-            
+
             <button
               type="submit"
               className="send-btn"
