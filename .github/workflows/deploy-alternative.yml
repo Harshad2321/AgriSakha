@@ -1,20 +1,20 @@
-name: Deploy AgriSakha
+name: Deploy AgriSakha Alternative
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  # Build job
-  build-frontend:
+  deploy-frontend:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -35,13 +35,15 @@ jobs:
       working-directory: ./frontend
       run: npm run build
     
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
       with:
-        name: frontend-build
-        path: ./frontend/build
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./frontend/build
+        cname: agrisakha.github.io
+        force_orphan: true
 
-  # Backend test job (runs in parallel with build)
   test-backend:
     runs-on: ubuntu-latest
     steps:
@@ -56,9 +58,7 @@ jobs:
       working-directory: ./backend
       run: |
         python -m pip install --upgrade pip
-        # Install basic dependencies first
         pip install fastapi uvicorn python-multipart pydantic python-jose Pillow
-        # Try to install transformers and torch, but don't fail if they don't work
         pip install transformers torch || echo "Warning: ML dependencies failed to install"
     
     - name: Test backend imports
