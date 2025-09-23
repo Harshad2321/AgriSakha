@@ -1,25 +1,38 @@
-name: Deploy AgriSakha
+name: Deploy to Vercel
 
 on:
   push:
     branches: [ main ]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  # Build and deploy frontend
-  deploy-frontend:
+  # Test Backend
+  test-backend:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install fastapi uvicorn python-multipart pydantic python-jose Pillow
+        pip install transformers torch || echo "Warning: ML dependencies failed to install"
+    
+    - name: Test backend imports
+      working-directory: ./backend
+      run: |
+        python test_import.py
+
+  # Build and Test Frontend
+  build-frontend:
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -38,40 +51,9 @@ jobs:
     - name: Build frontend
       working-directory: ./frontend
       run: npm run build
-    
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-        
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
       with:
+        name: frontend-build
         path: ./frontend/build
-        
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-
-  # Backend test job (runs in parallel with build)
-  test-backend:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      working-directory: ./backend
-      run: |
-        python -m pip install --upgrade pip
-        # Install basic dependencies first
-        pip install fastapi uvicorn python-multipart pydantic python-jose Pillow
-        # Try to install transformers and torch, but don't fail if they don't work
-        pip install transformers torch || echo "Warning: ML dependencies failed to install"
-    
-    - name: Test backend imports
-      working-directory: ./backend
-      run: |
-        python test_import.py
