@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSakha Demo Helper</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .demo-section {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .query-box {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            cursor: pointer;
+        }
+        .query-box:hover {
+            background: rgba(255,255,255,1);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        .btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .status {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .checklist {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .checklist input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        .timer {
+            text-align: center;
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #FFC107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌾 AgriSakha Demo Helper</h1>
+        
+        <div class="status">
+            <div>🎯 Presentation Tomorrow!</div>
+            <div class="timer" id="countdown">Ready to Demo!</div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🚀 Quick Links</h2>
+            <a href="https://agrisakha.vercel.app" target="_blank" class="btn">🌐 Live Demo</a>
+            <a href="https://github.com/Harshad2321/AgriSakha" target="_blank" class="btn">📁 GitHub Repo</a>
+            <a href="#" onclick="window.location.reload()" class="btn">🔄 Test App Status</a>
+        </div>
+
+        <div class="demo-section">
+            <h2>💬 Sample Queries for Demo</h2>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                What is the best time to sow wheat?
+            </div>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                How to control pests in rice crops?
+            </div>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                Organic fertilizer recommendations for vegetables
+            </div>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                Drip irrigation system benefits
+            </div>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                गेहूं की खेती कैसे करें?
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎤 Voice Demo Scripts</h2>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                What should I do if my wheat leaves are turning yellow?
+            </div>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                How much water does my rice crop need?
+            </div>
+            <div class="query-box" onclick="copyToClipboard(this.innerText)">
+                When should I harvest my wheat crop?
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>✅ Pre-Demo Checklist</h2>
+            <div class="checklist">
+                <label><input type="checkbox"> Test app loading speed</label><br>
+                <label><input type="checkbox"> Check voice input/output</label><br>
+                <label><input type="checkbox"> Test language toggle</label><br>
+                <label><input type="checkbox"> Prepare sample images</label><br>
+                <label><input type="checkbox"> Test on mobile device</label><br>
+                <label><input type="checkbox"> Check internet connection</label><br>
+                <label><input type="checkbox"> Backup demo plan ready</label><br>
+                <label><input type="checkbox"> Presentation notes reviewed</label><br>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎯 Demo Flow (5 minutes)</h2>
+            <ol style="font-size: 1.1em; line-height: 1.8;">
+                <li><strong>Opening (30s):</strong> Introduce AgriSakha and problem it solves</li>
+                <li><strong>Text Chat (1m):</strong> Demo 2-3 text queries</li>
+                <li><strong>Voice Input (1m):</strong> Show speech-to-text and voice response</li>
+                <li><strong>Language Toggle (30s):</strong> Demo Hindi support</li>
+                <li><strong>Image Analysis (1m):</strong> Upload and analyze crop image</li>
+                <li><strong>Technical Highlights (30s):</strong> Explain AI/Demo modes</li>
+                <li><strong>Closing (30s):</strong> Impact and Q&A</li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h2>🆘 Emergency Backup Plans</h2>
+            <ul style="font-size: 1.1em; line-height: 1.8;">
+                <li><strong>No Internet:</strong> Demo mode works offline!</li>
+                <li><strong>Voice Issues:</strong> Focus on text chat and image analysis</li>
+                <li><strong>App Down:</strong> Show GitHub repository and explain architecture</li>
+                <li><strong>Device Issues:</strong> Use mobile phone as backup</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; font-size: 1.2em;">
+            <strong>🌟 You're Ready! Good Luck Tomorrow! 🌟</strong>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Copied to clipboard: ' + text);
+            });
+        }
+
+        // Update countdown if needed
+        function updateCountdown() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0); // Assuming 9 AM presentation
+            
+            const diff = tomorrow - now;
+            if (diff > 0) {
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById('countdown').innerText = `${hours}h ${minutes}m until demo!`;
+            } else {
+                document.getElementById('countdown').innerText = 'Demo Time! 🚀';
+            }
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 60000); // Update every minute
+    </script>
+</body>
+</html>
